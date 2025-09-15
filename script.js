@@ -291,30 +291,42 @@ const backgrounds = {
 function setScene(sceneKey) {
   const scene = backgrounds[sceneKey];
   if (!scene) return;
+
   currentScene = sceneKey;
+  isDay = true; // ✅ always reset to day on load/scene change
 
   if (scene.type === "daynight") {
-    const videoSrc = isDay ? scene.day : scene.night;
-    bgVideo.src = videoSrc;
+    // Day/Night videos
+    bgVideo.src = scene.day;
     bgVideo.style.display = "block";
     backgroundVideoWrapper.style.background = "";
     document.getElementById("theme-switch").style.display = "flex";
+    dayMode.checked = true;     // ✅ force toggle to day
+    nightMode.checked = false;
     bgVideo.load();
     bgVideo.play().catch(() => {});
-  } else if (scene.type === "single") {
+  } 
+  else if (scene.type === "single") {
+    // Single video
     bgVideo.src = scene.file;
     bgVideo.style.display = "block";
     backgroundVideoWrapper.style.background = "";
     document.getElementById("theme-switch").style.display = "none";
     bgVideo.load();
     bgVideo.play().catch(() => {});
-  } else if (scene.type === "static") {
+  } 
+  else if (scene.type === "static") {
+    // Static image
     bgVideo.pause();
     bgVideo.removeAttribute("src");
     bgVideo.style.display = "none";
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
     document.getElementById("theme-switch").style.display = "none";
   }
+
+  // ✅ Save to localStorage so refresh uses "day"
+  localStorage.setItem("selectedScene", currentScene);
+  localStorage.setItem("isDay", JSON.stringify(isDay));
 }
 
 function toggleDayNight() {
