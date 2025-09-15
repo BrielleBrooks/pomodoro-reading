@@ -40,7 +40,6 @@ const nightMode = document.getElementById("night-mode");
 
 dayMode.addEventListener("change", () => {
   if (dayMode.checked) {
-    isDay = true;
     toggleDayNight();
   }
 });
@@ -220,7 +219,6 @@ const ambientSounds = [
 
 // === BACKGROUNDS ===
 let currentScene = null;
-let isDay = true;
 
 const backgrounds = {
   // 🌞 Day/Night folders (now with covers)
@@ -332,14 +330,13 @@ function toggleDayNight() {
   const scene = backgrounds[currentScene];
   if (scene.type !== "daynight") return;
 
-  // ✅ Flip + save day/night state
   isDay = !isDay;
   localStorage.setItem("isDay", JSON.stringify(isDay));
 
   const video = document.querySelector("#bgvid");
   if (video) {
     video.src = isDay ? scene.day : scene.night;
-    video.load();
+    // 🚫 remove video.load(); it causes the flash
     video.play().catch(() => {});
   }
 }
@@ -835,28 +832,12 @@ window.addEventListener("DOMContentLoaded", () => {
   const savedScene = localStorage.getItem("selectedScene");
   const savedDayNight = localStorage.getItem("isDay");
 
-  // Restore last known day/night state
   if (savedDayNight !== null) {
     isDay = savedDayNight === "true";
     dayMode.checked = isDay;
     nightMode.checked = !isDay;
   }
 
-  // Pick the correct scene
-  const initialScene = (savedScene && backgrounds[savedScene])
-    ? savedScene
-    : "bookcafe";   // 👈 your fallback
-
-  // ✅ Force scene load AFTER one tick
-  setTimeout(() => {
-    setScene(initialScene);
-
-    // ✅ Explicitly re-apply day/night so first load shows correctly
-    if (backgrounds[initialScene].type === "daynight") {
-      const scene = backgrounds[initialScene];
-      bgVideo.src = isDay ? scene.day : scene.night;
-      bgVideo.load();
-      bgVideo.play().catch(() => {});
-    }
-  }, 50);  // small delay lets DOM/video element initialize
+  const sceneKey = savedScene && backgrounds[savedScene] ? savedScene : "winternight";
+  setScene(sceneKey);  // ✅ now respects isDay when deciding day/night
 });
