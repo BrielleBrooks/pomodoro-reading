@@ -414,7 +414,21 @@ function pauseTimer() {
   startBtn.textContent = "Start";
 }
 
+// === INITIALIZE DEFAULT SCENE ===
+function initDefaultScene() {
+  const savedScene = localStorage.getItem("currentScene") || "bookcafe"; // default
+  const savedIsDay = localStorage.getItem("isDay");
+  isDay = savedIsDay === null ? true : savedIsDay === "true"; // restore or default
 
+  setScene(savedScene);
+
+  // ✅ Sync toggle UI with state
+  document.getElementById("day-mode").checked = isDay;
+  document.getElementById("night-mode").checked = !isDay;
+}
+
+// === CALL INIT ON LOAD ===
+window.addEventListener("DOMContentLoaded", initDefaultScene);
 
 
 // === TIMER EVENTS ===
