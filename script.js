@@ -346,19 +346,6 @@ function toggleDayNight() {
   }
 }
 
-// === INITIALIZE DEFAULT SCENE ===
-function initDefaultScene() {
-  const savedScene = localStorage.getItem("currentScene") || "bookcafe"; // default
-  const savedIsDay = localStorage.getItem("isDay");
-  isDay = savedIsDay === null ? true : savedIsDay === "true"; // restore or default
-
-  setScene(savedScene);
-
-  // ✅ Sync toggle UI with state
-  document.getElementById("day-mode").checked = isDay;
-  document.getElementById("night-mode").checked = !isDay;
-}
-
 // === TOGGLE LISTENERS ===
 document.getElementById("day-mode").addEventListener("change", () => {
   if (currentScene && backgrounds[currentScene].type === "daynight") {
