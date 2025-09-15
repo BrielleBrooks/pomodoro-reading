@@ -855,23 +855,30 @@ toggleTimerBtn.addEventListener("click", () => {
 
 // === RESTORE LAST SCENE OR FALLBACK DEFAULT ===
 window.addEventListener("DOMContentLoaded", () => {
-  // Try restoring from localStorage
+  // Restore from localStorage or fall back to defaults
   const savedScene = localStorage.getItem("selectedScene");
   const savedDayNight = localStorage.getItem("isDay");
 
-  // Pick defaults if nothing is saved
   currentScene = savedScene && backgrounds[savedScene] ? savedScene : "bookcafe";
   isDay = savedDayNight !== null ? JSON.parse(savedDayNight) : true;
 
-  // Apply background with correct day/night
+  // Apply scene
   setScene(currentScene);
+
+  // Force background to correct state
   applyDayNight(currentScene, isDay);
 
-  // ✅ Sync toggle UI to actual state
-  dayMode.checked = isDay;
-  nightMode.checked = !isDay;
+  // Sync toggle to actual state
+  const scene = backgrounds[currentScene];
+  if (scene.type === "daynight") {
+    document.getElementById("theme-switch").style.display = "flex";
+    dayMode.checked = isDay;
+    nightMode.checked = !isDay;
+  } else {
+    document.getElementById("theme-switch").style.display = "none";
+  }
 
-  // Save immediately so state is consistent
+  // Save immediately to prevent mismatches
   localStorage.setItem("selectedScene", currentScene);
   localStorage.setItem("isDay", JSON.stringify(isDay));
 });
