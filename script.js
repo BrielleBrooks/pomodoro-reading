@@ -288,41 +288,44 @@ const backgrounds = {
 
 };
 
-function setScene(sceneKey) {
+function setScene(sceneKey, resetMode = true) {
   const scene = backgrounds[sceneKey];
   if (!scene) return;
 
   currentScene = sceneKey;
 
+  if (resetMode) {
+    isDay = true; // only reset if explicitly told
+  }
+
   if (scene.type === "daynight") {
-    bgVideo.src = isDay ? scene.day : scene.night;
+    const videoSrc = isDay ? scene.day : scene.night;
+    bgVideo.src = videoSrc;
     bgVideo.style.display = "block";
-    bgVideo.style.width = "100%";   // ✅ force full width
-    bgVideo.style.height = "100%";  // ✅ force full height
-    bgVideo.style.objectFit = "cover"; // ✅ crop/cover
-    backgroundVideoWrapper.style.background = "black"; // ✅ no white flash
-    document.getElementById("theme-switch").style.display = "flex";
+    backgroundVideoWrapper.style.background = "";
+    document.getElementById("theme-switch").style.display = "flex"; 
     bgVideo.load();
     bgVideo.play().catch(() => {});
   } 
   else if (scene.type === "single") {
     bgVideo.src = scene.file;
     bgVideo.style.display = "block";
-    bgVideo.style.width = "100%";
-    bgVideo.style.height = "100%";
-    bgVideo.style.objectFit = "cover";
-    backgroundVideoWrapper.style.background = "black";
-    document.getElementById("theme-switch").style.display = "none";
+    backgroundVideoWrapper.style.background = "";
+    document.getElementById("theme-switch").style.display = "none"; 
     bgVideo.load();
     bgVideo.play().catch(() => {});
   } 
   else if (scene.type === "static") {
     bgVideo.pause();
     bgVideo.removeAttribute("src");
-    bgVideo.style.display = "none";
+    bgVideo.style.display = "none"; 
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
-    document.getElementById("theme-switch").style.display = "none";
+    document.getElementById("theme-switch").style.display = "none"; 
   }
+
+  // Save scene + mode
+  localStorage.setItem("selectedScene", currentScene);
+  localStorage.setItem("isDay", isDay);
 }
 
 function toggleDayNight() {
@@ -331,13 +334,22 @@ function toggleDayNight() {
   if (scene.type !== "daynight") return;
 
   isDay = !isDay;
-  localStorage.setItem("isDay", JSON.stringify(isDay));
+  applyDayNight(currentScene, isDay);
 
-  const video = document.querySelector("#bgvid");
-  if (video) {
-    video.src = isDay ? scene.day : scene.night;
-    // 🚫 remove video.load(); it causes the flash
-    video.play().catch(() => {});
+  // Save mode
+  localStorage.setItem("isDay", isDay);
+}
+
+
+function applyDayNight(sceneKey, dayMode) {
+  const scene = backgrounds[sceneKey];
+  if (!scene || scene.type !== "daynight") return;
+
+  const videoSrc = dayMode ? scene.day : scene.night;
+  if (bgVideo.src !== videoSrc) {
+    bgVideo.src = videoSrc;
+    bgVideo.load();
+    bgVideo.play().catch(() => {});
   }
 }
 
@@ -840,4 +852,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const sceneKey = savedScene && backgrounds[savedScene] ? savedScene : "winternight";
   setScene(sceneKey);  // ✅ now respects isDay when deciding day/night
+});
+
+// === INITIAL LOAD ===
+window.addEventListener("DOMContentLoaded", () => {
+  // Load saved scene + mode from localStorage
+  const savedScene = localStorage.getItem("selectedScene") || "bookcafe"; // default
+  const savedMode = localStorage.getItem("isDay") === "false" ? false : true;
+
+  currentScene = savedScene;
+  isDay = savedMode;
+
+  setScene(currentScene, false); // false = don't reset mode inside setScene
+  applyDayNight(currentScene, isDay); // apply correct video or image
 });
