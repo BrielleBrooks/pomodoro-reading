@@ -288,55 +288,34 @@ const backgrounds = {
 
 };
 
-// === BACKGROUND SYSTEM ===
-let currentScene = null;
-let isDay = true;
-
-// Load saved state on startup
-window.addEventListener("DOMContentLoaded", () => {
-  const savedScene = localStorage.getItem("selectedScene");
-  const savedMode = localStorage.getItem("isDay");
-
-  // Use saved or fallback to a default (set yours here)
-  currentScene = savedScene || "bookcafe";
-  isDay = savedMode === "false" ? false : true;
-
-  loadScene(currentScene, isDay);
-});
-
-// Main scene loader
-function loadScene(sceneKey, dayMode) {
+function setScene(sceneKey) {
   const scene = backgrounds[sceneKey];
   if (!scene) return;
 
   currentScene = sceneKey;
-  isDay = dayMode;
 
   if (scene.type === "daynight") {
-    const videoSrc = isDay ? scene.day : scene.night;
-
-    // Avoid flashing wrong default — only swap if needed
-    if (bgVideo.src !== videoSrc) {
-      bgVideo.src = videoSrc;
-      bgVideo.load();
-      bgVideo.play().catch(() => {});
-    }
-
+    bgVideo.src = isDay ? scene.day : scene.night;
     bgVideo.style.display = "block";
-    backgroundVideoWrapper.style.background = "";
+    bgVideo.style.width = "100%";   // ✅ force full width
+    bgVideo.style.height = "100%";  // ✅ force full height
+    bgVideo.style.objectFit = "cover"; // ✅ crop/cover
+    backgroundVideoWrapper.style.background = "black"; // ✅ no white flash
     document.getElementById("theme-switch").style.display = "flex";
-  }
+    bgVideo.load();
+    bgVideo.play().catch(() => {});
+  } 
   else if (scene.type === "single") {
-    if (bgVideo.src !== scene.file) {
-      bgVideo.src = scene.file;
-      bgVideo.load();
-      bgVideo.play().catch(() => {});
-    }
-
+    bgVideo.src = scene.file;
     bgVideo.style.display = "block";
-    backgroundVideoWrapper.style.background = "";
+    bgVideo.style.width = "100%";
+    bgVideo.style.height = "100%";
+    bgVideo.style.objectFit = "cover";
+    backgroundVideoWrapper.style.background = "black";
     document.getElementById("theme-switch").style.display = "none";
-  }
+    bgVideo.load();
+    bgVideo.play().catch(() => {});
+  } 
   else if (scene.type === "static") {
     bgVideo.pause();
     bgVideo.removeAttribute("src");
@@ -344,25 +323,23 @@ function loadScene(sceneKey, dayMode) {
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
     document.getElementById("theme-switch").style.display = "none";
   }
-
-  // Save state
-  localStorage.setItem("selectedScene", currentScene);
-  localStorage.setItem("isDay", isDay);
 }
 
-// Switch scene manually
-function setScene(sceneKey) {
-  loadScene(sceneKey, true); // when picking new, start in day mode
-}
-
-// Toggle between day/night
 function toggleDayNight() {
   if (!currentScene) return;
   const scene = backgrounds[currentScene];
-  if (!scene || scene.type !== "daynight") return;
+  if (scene.type !== "daynight") return;
 
+  // ✅ Flip + save day/night state
   isDay = !isDay;
-  loadScene(currentScene, isDay);
+  localStorage.setItem("isDay", JSON.stringify(isDay));
+
+  const video = document.querySelector("#bgvid");
+  if (video) {
+    video.src = isDay ? scene.day : scene.night;
+    video.load();
+    video.play().catch(() => {});
+  }
 }
 
 // === TIMER FUNCTIONS ===
