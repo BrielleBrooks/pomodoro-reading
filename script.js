@@ -293,7 +293,6 @@ function setScene(sceneKey) {
   if (!scene) return;
 
   currentScene = sceneKey;
-  isDay = true; // ✅ always reset to day on load/scene change
 
   if (scene.type === "daynight") {
     // Day/Night videos
@@ -329,29 +328,45 @@ function setScene(sceneKey) {
   localStorage.setItem("isDay", JSON.stringify(isDay));
 }
 
-function toggleDayNight() {
+function toggleDayNight(forceState = null) {
   if (!currentScene) return;
   const scene = backgrounds[currentScene];
   if (scene.type !== "daynight") return;
 
-  // ✅ Flip + save day/night state
-  isDay = !isDay;
+  // Decide state
+  if (forceState !== null) {
+    isDay = forceState;
+  } else {
+    isDay = !isDay;
+  }
+
+  // Save
   localStorage.setItem("isDay", JSON.stringify(isDay));
 
+  // Apply
   const video = document.querySelector("#bgvid");
   if (video) {
     video.src = isDay ? scene.day : scene.night;
     video.load();
     video.play().catch(() => {});
   }
+
+  // Sync toggle UI
+  dayMode.checked = isDay;
+  nightMode.checked = !isDay;
+}
 }
 
 // === TOGGLE LISTENERS ===
-document.getElementById("day-mode").addEventListener("change", () => {
-  if (currentScene && backgrounds[currentScene].type === "daynight") {
-    isDay = true;
-    localStorage.setItem("isDay", "true");
-    toggleDayNight();
+dayMode.addEventListener("change", () => {
+  if (dayMode.checked && currentScene && backgrounds[currentScene].type === "daynight") {
+    toggleDayNight(true); // explicit set to day
+  }
+});
+
+nightMode.addEventListener("change", () => {
+  if (nightMode.checked && currentScene && backgrounds[currentScene].type === "daynight") {
+    toggleDayNight(false); // explicit set to night
   }
 });
 
