@@ -40,6 +40,7 @@ const nightMode = document.getElementById("night-mode");
 
 dayMode.addEventListener("change", () => {
   if (dayMode.checked) {
+    isDay = true;
     toggleDayNight();
   }
 });
@@ -219,6 +220,7 @@ const ambientSounds = [
 
 // === BACKGROUNDS ===
 let currentScene = null;
+let isDay = true;
 
 const backgrounds = {
   // 🌞 Day/Night folders (now with covers)
@@ -295,91 +297,52 @@ function setScene(sceneKey) {
   currentScene = sceneKey;
 
   if (scene.type === "daynight") {
-    // Day/Night videos
-    bgVideo.src = scene.day;
+    bgVideo.src = isDay ? scene.day : scene.night;
     bgVideo.style.display = "block";
-    backgroundVideoWrapper.style.background = "";
+    bgVideo.style.width = "100%";   // ✅ force full width
+    bgVideo.style.height = "100%";  // ✅ force full height
+    bgVideo.style.objectFit = "cover"; // ✅ crop/cover
+    backgroundVideoWrapper.style.background = "black"; // ✅ no white flash
     document.getElementById("theme-switch").style.display = "flex";
-    dayMode.checked = true;     // ✅ force toggle to day
-    nightMode.checked = false;
     bgVideo.load();
     bgVideo.play().catch(() => {});
   } 
   else if (scene.type === "single") {
-    // Single video
     bgVideo.src = scene.file;
     bgVideo.style.display = "block";
-    backgroundVideoWrapper.style.background = "";
+    bgVideo.style.width = "100%";
+    bgVideo.style.height = "100%";
+    bgVideo.style.objectFit = "cover";
+    backgroundVideoWrapper.style.background = "black";
     document.getElementById("theme-switch").style.display = "none";
     bgVideo.load();
     bgVideo.play().catch(() => {});
   } 
   else if (scene.type === "static") {
-    // Static image
     bgVideo.pause();
     bgVideo.removeAttribute("src");
     bgVideo.style.display = "none";
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
     document.getElementById("theme-switch").style.display = "none";
   }
-
-  // ✅ Save to localStorage so refresh uses "day"
-  localStorage.setItem("selectedScene", currentScene);
-  localStorage.setItem("isDay", JSON.stringify(isDay));
 }
 
-function toggleDayNight(forceState = null) {
+function toggleDayNight() {
   if (!currentScene) return;
   const scene = backgrounds[currentScene];
   if (scene.type !== "daynight") return;
 
-  // Decide state
-  if (forceState !== null) {
-    isDay = forceState;
-  } else {
-    isDay = !isDay;
-  }
-
-  // Save
+  // ✅ Flip + save day/night state
+  isDay = !isDay;
   localStorage.setItem("isDay", JSON.stringify(isDay));
 
-  // Apply
   const video = document.querySelector("#bgvid");
   if (video) {
     video.src = isDay ? scene.day : scene.night;
     video.load();
     video.play().catch(() => {});
   }
-
-  // Sync toggle UI
-  dayMode.checked = isDay;
-  nightMode.checked = !isDay;
 }
-}
-
-// === TOGGLE LISTENERS ===
-dayMode.addEventListener("change", () => {
-  if (dayMode.checked && currentScene && backgrounds[currentScene].type === "daynight") {
-    toggleDayNight(true); // explicit set to day
-  }
-});
-
-nightMode.addEventListener("change", () => {
-  if (nightMode.checked && currentScene && backgrounds[currentScene].type === "daynight") {
-    toggleDayNight(false); // explicit set to night
-  }
-});
-
-document.getElementById("night-mode").addEventListener("change", () => {
-  if (currentScene && backgrounds[currentScene].type === "daynight") {
-    isDay = false;
-    localStorage.setItem("isDay", "false");
-    toggleDayNight();
-  }
-});
-
-// === CALL INIT ON LOAD ===
-window.addEventListener("DOMContentLoaded", initDefaultScene);
 
 // === TIMER FUNCTIONS ===
 function formatTime(seconds) {
@@ -414,21 +377,7 @@ function pauseTimer() {
   startBtn.textContent = "Start";
 }
 
-// === INITIALIZE DEFAULT SCENE ===
-function initDefaultScene() {
-  const savedScene = localStorage.getItem("currentScene") || "bookcafe"; // default
-  const savedIsDay = localStorage.getItem("isDay");
-  isDay = savedIsDay === null ? true : savedIsDay === "true"; // restore or default
 
-  setScene(savedScene);
-
-  // ✅ Sync toggle UI with state
-  document.getElementById("day-mode").checked = isDay;
-  document.getElementById("night-mode").checked = !isDay;
-}
-
-// === CALL INIT ON LOAD ===
-window.addEventListener("DOMContentLoaded", initDefaultScene);
 
 
 // === TIMER EVENTS ===
@@ -883,30 +832,31 @@ toggleTimerBtn.addEventListener("click", () => {
 
 // === RESTORE LAST SCENE OR FALLBACK DEFAULT ===
 window.addEventListener("DOMContentLoaded", () => {
-  // Restore from localStorage or fall back to defaults
   const savedScene = localStorage.getItem("selectedScene");
   const savedDayNight = localStorage.getItem("isDay");
 
-  currentScene = savedScene && backgrounds[savedScene] ? savedScene : "bookcafe";
-  isDay = savedDayNight !== null ? JSON.parse(savedDayNight) : true;
-
-  // Apply scene
-  setScene(currentScene);
-
-  // Force background to correct state
-  applyDayNight(currentScene, isDay);
-
-  // Sync toggle to actual state
-  const scene = backgrounds[currentScene];
-  if (scene.type === "daynight") {
-    document.getElementById("theme-switch").style.display = "flex";
+  // Restore last known day/night state
+  if (savedDayNight !== null) {
+    isDay = savedDayNight === "true";
     dayMode.checked = isDay;
     nightMode.checked = !isDay;
-  } else {
-    document.getElementById("theme-switch").style.display = "none";
   }
 
-  // Save immediately to prevent mismatches
-  localStorage.setItem("selectedScene", currentScene);
-  localStorage.setItem("isDay", JSON.stringify(isDay));
+  // Pick the correct scene
+  const initialScene = (savedScene && backgrounds[savedScene])
+    ? savedScene
+    : "bookcafe";   // 👈 your fallback
+
+  // ✅ Force scene load AFTER one tick
+  setTimeout(() => {
+    setScene(initialScene);
+
+    // ✅ Explicitly re-apply day/night so first load shows correctly
+    if (backgrounds[initialScene].type === "daynight") {
+      const scene = backgrounds[initialScene];
+      bgVideo.src = isDay ? scene.day : scene.night;
+      bgVideo.load();
+      bgVideo.play().catch(() => {});
+    }
+  }, 50);  // small delay lets DOM/video element initialize
 });
