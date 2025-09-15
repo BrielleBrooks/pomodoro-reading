@@ -293,7 +293,6 @@ function setScene(sceneKey) {
   if (!scene) return;
   currentScene = sceneKey;
 
-  // Don’t force isDay = true on every load
   if (scene.type === "daynight") {
     const videoSrc = isDay ? scene.day : scene.night;
     bgVideo.src = videoSrc;
@@ -302,19 +301,17 @@ function setScene(sceneKey) {
     document.getElementById("theme-switch").style.display = "flex";
     bgVideo.load();
     bgVideo.play().catch(() => {});
-  } 
-  else if (scene.type === "single") {
+  } else if (scene.type === "single") {
     bgVideo.src = scene.file;
     bgVideo.style.display = "block";
     backgroundVideoWrapper.style.background = "";
     document.getElementById("theme-switch").style.display = "none";
     bgVideo.load();
     bgVideo.play().catch(() => {});
-  } 
-  else if (scene.type === "static") {
+  } else if (scene.type === "static") {
     bgVideo.pause();
     bgVideo.removeAttribute("src");
-    bgVideo.style.display = "none"; 
+    bgVideo.style.display = "none";
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
     document.getElementById("theme-switch").style.display = "none";
   }
@@ -858,28 +855,22 @@ toggleTimerBtn.addEventListener("click", () => {
 
 // === RESTORE LAST SCENE OR FALLBACK DEFAULT ===
 window.addEventListener("DOMContentLoaded", () => {
+  // 🔹 Load saved settings
   const savedScene = localStorage.getItem("selectedScene");
   const savedDayNight = localStorage.getItem("isDay");
 
-  if (savedDayNight !== null) {
-    isDay = savedDayNight === "true";
-    dayMode.checked = isDay;
-    nightMode.checked = !isDay;
-  }
+  // 🔹 Decide initial values
+  currentScene = savedScene && backgrounds[savedScene] ? savedScene : "winternight";
+  isDay = savedDayNight !== null ? JSON.parse(savedDayNight) : true;
 
-  const sceneKey = savedScene && backgrounds[savedScene] ? savedScene : "winternight";
-  setScene(sceneKey);  // ✅ now respects isDay when deciding day/night
-});
+  // 🔹 Apply background correctly
+  setScene(currentScene);
 
-// === INITIAL LOAD ===
-window.addEventListener("DOMContentLoaded", () => {
-  // Load saved scene + mode from localStorage
-  const savedScene = localStorage.getItem("selectedScene") || "bookcafe"; // default
-  const savedMode = localStorage.getItem("isDay") === "false" ? false : true;
+  // 🔹 Update toggle UI
+  dayMode.checked = isDay;
+  nightMode.checked = !isDay;
 
-  currentScene = savedScene;
-  isDay = savedMode;
-
-  setScene(currentScene, false); // false = don't reset mode inside setScene
-  applyDayNight(currentScene, isDay); // apply correct video or image
+  // 🔹 Save state immediately (so toggle works right away)
+  localStorage.setItem("selectedScene", currentScene);
+  localStorage.setItem("isDay", JSON.stringify(isDay));
 });
