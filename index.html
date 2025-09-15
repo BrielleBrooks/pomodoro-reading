@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aesthetic Pomodoro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Logo in Top Left -->
+  <div class="logo-container">
+    <a href="https://notionably.com" target="_blank">
+      <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/logo/logo-default.png" alt="Logo" class="logo default">
+      <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/logo/logo-hover.png" alt="Logo Hover" class="logo hover">
+    </a>
+  </div>
+
+<!-- 🎥 Background Wrapper -->
+<div id="background-video">
+  <video autoplay muted loop playsinline id="bgvid" 
+         src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/backgrounds/bookcafe/day.mp4"
+         poster="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/backgrounds/bookcafe/cover.png">
+  </video>
+</div>
+
+  <!-- ⏱️ Timer & Buttons -->
+  <div class="timer-container">
+    <div class="mode-buttons">
+      <button class="mode-button active" data-mode="focus">Focus</button>
+      <button class="mode-button" data-mode="short">Short Break</button>
+      <button class="mode-button" data-mode="long">Long Break</button>
+    </div>
+    <div id="timer-display">25:00</div>
+    <button id="start-btn" class="start-button">Start</button>
+  </div>
+  
+  <div class="time-container">
+  <div id="date-display"></div>
+  <div id="time-display"></div>
+</div>
+
+  <!-- 🎛️ Bottom Controls -->
+  <div class="floating-controls">
+    <div class="left-controls">
+      <button id="music-btn" class="icon-btn">
+        <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/music.svg" alt="Music" />
+      </button>
+      <button id="ambient-btn" class="icon-btn">
+        <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/ambient.svg" alt="Ambient" />
+      </button>
+    </div>
+  <div class="right-controls">
+  <!-- 3-Option Mode Toggle -->
+ <div class="mode-toggle">
+  <input type="radio" id="ambient-mode" name="mode" checked>
+  <label for="ambient-mode" class="mode-option">
+    <div class="mode-highlight"></div>
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/ambient-toggle.svg" alt="Ambient">
+  </label>
+
+  <input type="radio" id="home-mode" name="mode">
+  <label for="home-mode" class="mode-option">
+    <div class="mode-highlight"></div>
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/home.svg" alt="Home">
+  </label>
+
+  <input type="radio" id="focus-mode" name="mode">
+  <label for="focus-mode" class="mode-option">
+    <div class="mode-highlight"></div>
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/timer.svg" alt="Focus">
+  </label>
+</div>
+
+<!-- Day/Night Toggle -->
+<div id="theme-switch" class="theme-toggle">
+  <input type="radio" id="night-mode" name="theme" checked>
+  <label for="night-mode" class="toggle-option">
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/night-toggle.svg" alt="Night" class="icon" />
+    <div class="toggle-ball"></div>
+  </label>
+
+  <input type="radio" id="day-mode" name="theme">
+  <label for="day-mode" class="toggle-option" id="day-night-btn">
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/day-toggle.svg" alt="Day" class="icon" />
+    <div class="toggle-ball"></div>
+  </label>
+</div>
+
+  <!-- Scene button -->
+  <button id="background-btn" class="icon-btn">
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/background-button.svg" alt="Backgrounds">
+  </button>
+
+  <!-- Fullscreen -->
+  <button id="fullscreen-btn" class="icon-btn">
+    <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/full-screen.svg" alt="Fullscreen">
+  </button>
+</div>
+
+  <!-- 🔲 Modal Container -->
+  <div id="modal-container"></div>
+
+  <!-- 🎬 Scene Modal -->
+  <div class="modal-overlay" id="scene-modal" style="display: none;">
+    <div class="modal-content scene-modal">
+      <!-- Close button -->
+      <button class="close-btn" id="close-scene">&times;</button>
+
+      <!-- Left navigation -->
+      <div class="scene-nav left" id="scene-prev">
+        <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/arrow-left.svg" alt="Previous">
+      </div>
+
+     <!-- Carousel -->
+<div class="scene-carousel-inner">
+
+
+      <!-- Right navigation -->
+      <div class="scene-nav right" id="scene-next">
+        <img src="https://pub-236e707462434f9c85349197ad4239bb.r2.dev/icons/arrow-right.svg" alt="Next">
+      </div>
+    </div>
+  </div>
+
+  <!-- 📜 JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
