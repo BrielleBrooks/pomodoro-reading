@@ -291,16 +291,14 @@ const backgrounds = {
 function setScene(sceneKey) {
   const scene = backgrounds[sceneKey];
   if (!scene) return;
-
   currentScene = sceneKey;
 
+  // Don’t force isDay = true on every load
   if (scene.type === "daynight") {
-    bgVideo.src = isDay ? scene.day : scene.night;
+    const videoSrc = isDay ? scene.day : scene.night;
+    bgVideo.src = videoSrc;
     bgVideo.style.display = "block";
-    bgVideo.style.width = "100%";   // ✅ force full width
-    bgVideo.style.height = "100%";  // ✅ force full height
-    bgVideo.style.objectFit = "cover"; // ✅ crop/cover
-    backgroundVideoWrapper.style.background = "black"; // ✅ no white flash
+    backgroundVideoWrapper.style.background = "";
     document.getElementById("theme-switch").style.display = "flex";
     bgVideo.load();
     bgVideo.play().catch(() => {});
@@ -308,10 +306,7 @@ function setScene(sceneKey) {
   else if (scene.type === "single") {
     bgVideo.src = scene.file;
     bgVideo.style.display = "block";
-    bgVideo.style.width = "100%";
-    bgVideo.style.height = "100%";
-    bgVideo.style.objectFit = "cover";
-    backgroundVideoWrapper.style.background = "black";
+    backgroundVideoWrapper.style.background = "";
     document.getElementById("theme-switch").style.display = "none";
     bgVideo.load();
     bgVideo.play().catch(() => {});
@@ -319,7 +314,7 @@ function setScene(sceneKey) {
   else if (scene.type === "static") {
     bgVideo.pause();
     bgVideo.removeAttribute("src");
-    bgVideo.style.display = "none";
+    bgVideo.style.display = "none"; 
     backgroundVideoWrapper.style.background = `url('${scene.file}') center/cover no-repeat`;
     document.getElementById("theme-switch").style.display = "none";
   }
